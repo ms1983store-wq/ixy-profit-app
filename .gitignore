@@ -1,0 +1,8 @@
+tools/
+publish/
+*.log
+*.zip
+serve-lan.out.log
+serve-lan.err.log
+cloudflared.out.log
+cloudflared.err.log
