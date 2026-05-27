@@ -485,11 +485,6 @@ tbody tr.selected {
     font-size: 23px;
   }
 
-  .result-panel {
-    order: -1;
-    border-color: rgba(15, 118, 110, 0.35);
-  }
-
   .grid-2,
   .metrics,
   .thresholds,
