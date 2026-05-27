@@ -23,6 +23,13 @@ const marketData = [
   { model: "IXY 210", count: 73, overall: 19999, junk: { price: 10300, count: 6 }, good: { price: 22000, count: 47 }, fair: { price: 16250, count: 16 }, poor: { price: 19500, count: 5 }, veryPoor: { price: 11000, count: 5 } },
 ];
 
+const colorRules = {
+  silver: { label: "シルバー", factor: 1, note: "基準色として補正なし" },
+  black: { label: "ブラック", factor: 1.03, note: "黒系はやや強めに補正" },
+  pink: { label: "ピンク", factor: 1.06, note: "人気色として強めに補正" },
+  other: { label: "その他", factor: 0.97, note: "流通が読みにくいため少し控えめ" },
+};
+
 const modeRules = {
   standard: {
     label: "標準",
@@ -56,8 +63,8 @@ const yen = new Intl.NumberFormat("ja-JP", {
   maximumFractionDigits: 0,
 });
 
-const modelInput = document.querySelector("#modelInput");
-const modelOptions = document.querySelector("#modelOptions");
+const modelSelect = document.querySelector("#modelSelect");
+const colorSelect = document.querySelector("#colorSelect");
 const basisSelect = document.querySelector("#basisSelect");
 const salePriceInput = document.querySelector("#salePrice");
 const buyPriceInput = document.querySelector("#buyPrice");
@@ -82,7 +89,15 @@ const priceBars = document.querySelector("#priceBars");
 const modelCount = document.querySelector("#modelCount");
 const marketTable = document.querySelector("#marketTable");
 
-function getPrice(model, basis) {
+function roundToHundred(value) {
+  return Math.round(value / 100) * 100;
+}
+
+function getModel() {
+  return marketData.find((item) => item.model === modelSelect.value) || marketData[0];
+}
+
+function getBasePrice(model, basis) {
   if (!model) return 0;
   if (basis === "overall") return model.overall;
   return model[basis]?.price ?? 0;
@@ -94,22 +109,14 @@ function getCount(model, basis) {
   return model[basis]?.count ?? 0;
 }
 
+function getColorAdjustedPrice(model, basis, colorKey) {
+  const base = getBasePrice(model, basis);
+  const factor = colorRules[colorKey]?.factor ?? 1;
+  return roundToHundred(base * factor);
+}
+
 function normalize(value) {
   return String(value || "").toUpperCase().replace(/\s+/g, " ").trim();
-}
-
-function findModel(value) {
-  const normalized = normalize(value);
-  return (
-    marketData.find((item) => normalize(item.model) === normalized) ||
-    marketData.find((item) => normalize(item.model).includes(normalized)) ||
-    marketData[0]
-  );
-}
-
-function findExactModel(value) {
-  const normalized = normalize(value);
-  return marketData.find((item) => normalize(item.model) === normalized);
 }
 
 function activeMode() {
@@ -136,14 +143,15 @@ function judge(profit, roi, rules) {
   return "cross";
 }
 
-function updateSalePriceFromModel() {
-  const model = findModel(modelInput.value);
-  salePriceInput.value = getPrice(model, basisSelect.value);
+function updateSalePriceFromSelection() {
+  const model = getModel();
+  salePriceInput.value = getColorAdjustedPrice(model, basisSelect.value, colorSelect.value);
 }
 
 function renderBars(model) {
   const keys = ["overall", "junk", "good", "fair", "poor", "veryPoor"];
-  const maxPrice = Math.max(...keys.map((key) => getPrice(model, key)));
+  const color = colorRules[colorSelect.value] || colorRules.silver;
+  const maxPrice = Math.max(...keys.map((key) => getBasePrice(model, key)), getColorAdjustedPrice(model, basisSelect.value, colorSelect.value));
   const colors = {
     overall: "#2563eb",
     junk: "#b42318",
@@ -151,21 +159,33 @@ function renderBars(model) {
     fair: "#b7791f",
     poor: "#9a3412",
     veryPoor: "#6b7280",
+    adjusted: "#7c3aed",
   };
 
-  modelCount.textContent = `${model.count}件`;
-  priceBars.innerHTML = keys
-    .map((key) => {
-      const price = getPrice(model, key);
-      const count = getCount(model, key);
-      const width = maxPrice ? Math.max(5, Math.round((price / maxPrice) * 100)) : 0;
+  const rows = keys.map((key) => {
+    const price = getBasePrice(model, key);
+    const count = getCount(model, key);
+    return { key, label: `${basisLabels[key]}${key === "overall" ? "" : ` (${count})`}`, price, color: colors[key] };
+  });
+
+  rows.splice(1, 0, {
+    key: "adjusted",
+    label: `${color.label}補正後`,
+    price: getColorAdjustedPrice(model, basisSelect.value, colorSelect.value),
+    color: colors.adjusted,
+  });
+
+  modelCount.textContent = `${model.count}件 / ${color.note}`;
+  priceBars.innerHTML = rows
+    .map((row) => {
+      const width = maxPrice ? Math.max(5, Math.round((row.price / maxPrice) * 100)) : 0;
       return `
-        <div class="bar-row">
-          <span>${basisLabels[key]}${key === "overall" ? "" : ` (${count})`}</span>
+        <div class="bar-row ${row.key === "adjusted" ? "adjusted-row" : ""}">
+          <span>${row.label}</span>
           <div class="bar-track" aria-hidden="true">
-            <div class="bar-fill" style="--bar:${width}%; --bar-color:${colors[key]}"></div>
+            <div class="bar-fill" style="--bar:${width}%; --bar-color:${row.color}"></div>
           </div>
-          <strong>${yen.format(price)}</strong>
+          <strong>${yen.format(row.price)}</strong>
         </div>
       `;
     })
@@ -177,7 +197,7 @@ function renderTable() {
   marketTable.innerHTML = marketData
     .filter((item) => normalize(item.model).includes(query))
     .map((item) => {
-      const selected = normalize(item.model) === normalize(modelInput.value) ? "selected" : "";
+      const selected = item.model === modelSelect.value ? "selected" : "";
       return `
         <tr class="${selected}" data-model="${item.model}">
           <td>${item.model}</td>
@@ -194,7 +214,8 @@ function renderTable() {
 }
 
 function renderCalculator() {
-  const model = findModel(modelInput.value);
+  const model = getModel();
+  const color = colorRules[colorSelect.value] || colorRules.silver;
   const salePrice = Number(salePriceInput.value) || 0;
   const buyPrice = Number(buyPriceInput.value) || 0;
   const feeRate = Number(feeRateInput.value) || 0;
@@ -213,15 +234,15 @@ function renderCalculator() {
   if (!buyPrice) {
     decisionMark.textContent = "△";
     decisionLabel.textContent = "仕入れ金額を入力";
-    decisionNote.textContent = `${model.model} / ${basisLabels[basisSelect.value]} ${yen.format(salePrice)} を基準に計算します。`;
+    decisionNote.textContent = `${model.model} / ${color.label} / ${basisLabels[basisSelect.value]} ${yen.format(salePrice)} を基準に計算します。`;
   } else if (result === "circle") {
     decisionMark.textContent = "○";
     decisionLabel.textContent = "仕入れ候補";
-    decisionNote.textContent = `利益 ${yen.format(profit)}、対仕入れ ${roi.toFixed(1)}%。${rules.label}モードの基準を超えています。`;
+    decisionNote.textContent = `利益 ${yen.format(profit)}、対仕入れ ${roi.toFixed(1)}%。${color.label}補正込みで基準を超えています。`;
   } else if (result === "triangle") {
     decisionMark.textContent = "△";
     decisionLabel.textContent = "条件次第";
-    decisionNote.textContent = `利益は残ります。付属品、動作確認、相場のブレを見て判断。`;
+    decisionNote.textContent = `利益は残ります。色、付属品、動作確認、相場のブレを見て判断。`;
   } else {
     decisionMark.textContent = "×";
     decisionLabel.textContent = "見送り寄り";
@@ -237,44 +258,41 @@ function renderCalculator() {
   breakEven.textContent = yen.format(netRevenue);
   circleLimit.textContent = yen.format(circleMax);
   triangleLimit.textContent = yen.format(triangleMax);
-  thresholdText.textContent = `${rules.label}モード: ○は利益${yen.format(rules.circle.minProfit)}以上かつ対仕入れ${rules.circle.roi}%以上、△は利益${yen.format(rules.triangle.minProfit)}以上かつ対仕入れ${rules.triangle.roi}%以上。手数料 ${feeRate}% / 送料 ${yen.format(ship)} で計算。`;
+  thresholdText.textContent = `${rules.label}モード: ○は利益${yen.format(rules.circle.minProfit)}以上かつ対仕入れ${rules.circle.roi}%以上、△は利益${yen.format(rules.triangle.minProfit)}以上かつ対仕入れ${rules.triangle.roi}%以上。手数料 ${feeRate}% / 送料 ${yen.format(ship)} / 色補正 ${Math.round(color.factor * 100)}% で計算。`;
 
   renderBars(model);
   renderTable();
 }
 
 function init() {
-  marketData.forEach((item) => {
-    const option = document.createElement("option");
-    option.value = item.model;
-    modelOptions.appendChild(option);
-  });
+  modelSelect.innerHTML = marketData
+    .map((item) => `<option value="${item.model}">${item.model}</option>`)
+    .join("");
 
-  modelInput.value = "IXY 650";
-  salePriceInput.value = "39000";
+  modelSelect.value = "IXY 650";
+  colorSelect.value = "silver";
+  basisSelect.value = "overall";
+  salePriceInput.value = getColorAdjustedPrice(getModel(), basisSelect.value, colorSelect.value);
   buyPriceInput.value = "";
   renderTable();
   renderCalculator();
 }
 
-modelInput.addEventListener("change", () => {
-  const model = findModel(modelInput.value);
-  modelInput.value = model.model;
-  updateSalePriceFromModel();
+modelSelect.addEventListener("change", () => {
+  updateSalePriceFromSelection();
   renderCalculator();
 });
 
-modelInput.addEventListener("input", () => {
-  const exact = findExactModel(modelInput.value);
-  if (exact) {
-    salePriceInput.value = getPrice(exact, basisSelect.value);
-  }
+colorSelect.addEventListener("change", () => {
+  updateSalePriceFromSelection();
   renderCalculator();
 });
+
 basisSelect.addEventListener("change", () => {
-  updateSalePriceFromModel();
+  updateSalePriceFromSelection();
   renderCalculator();
 });
+
 salePriceInput.addEventListener("input", renderCalculator);
 buyPriceInput.addEventListener("input", renderCalculator);
 feeRateInput.addEventListener("input", renderCalculator);
@@ -292,14 +310,15 @@ tableSearch.addEventListener("input", renderTable);
 marketTable.addEventListener("click", (event) => {
   const row = event.target.closest("tr[data-model]");
   if (!row) return;
-  modelInput.value = row.dataset.model;
-  updateSalePriceFromModel();
+  modelSelect.value = row.dataset.model;
+  updateSalePriceFromSelection();
   renderCalculator();
 });
 document.querySelector("#resetButton").addEventListener("click", () => {
-  modelInput.value = "IXY 650";
+  modelSelect.value = "IXY 650";
+  colorSelect.value = "silver";
   basisSelect.value = "overall";
-  salePriceInput.value = "39000";
+  salePriceInput.value = getColorAdjustedPrice(getModel(), basisSelect.value, colorSelect.value);
   buyPriceInput.value = "";
   feeRateInput.value = "10";
   shippingPreset.value = "750";

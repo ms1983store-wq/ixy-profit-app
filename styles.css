@@ -378,6 +378,18 @@ select:focus {
   background: var(--bar-color, var(--teal));
 }
 
+.adjusted-row {
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.adjusted-row span,
+.adjusted-row strong {
+  color: #5b21b6;
+  font-weight: 800;
+}
+
 .table-panel {
   overflow: hidden;
 }
@@ -471,6 +483,11 @@ tbody tr.selected {
 
   h1 {
     font-size: 23px;
+  }
+
+  .result-panel {
+    order: -1;
+    border-color: rgba(15, 118, 110, 0.35);
   }
 
   .grid-2,
