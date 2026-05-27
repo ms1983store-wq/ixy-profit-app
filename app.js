@@ -21,7 +21,12 @@ const marketData = [
   { model: "IXY 630", count: 105, overall: 28800, junk: { price: 14000, count: 6 }, good: { price: 29800, count: 62 }, fair: { price: 27390, count: 34 }, poor: { price: 19500, count: 5 }, veryPoor: { price: 15428, count: 4 } },
   { model: "IXY 30S", count: 111, overall: 40000, junk: { price: 18750, count: 6 }, good: { price: 43000, count: 57 }, fair: { price: 38773, count: 35 }, poor: { price: 34000, count: 13 }, veryPoor: { price: 19750, count: 6 } },
   { model: "IXY 210", count: 73, overall: 19999, junk: { price: 10300, count: 6 }, good: { price: 22000, count: 47 }, fair: { price: 16250, count: 16 }, poor: { price: 19500, count: 5 }, veryPoor: { price: 11000, count: 5 } },
+  { model: "IXY 110F", count: 35, overall: 20000, junk: { price: 15000, count: 3 }, good: { price: 21000, count: 25 }, fair: { price: 18650, count: 8 }, poor: { price: 17500, count: 0 }, veryPoor: { price: 17500, count: 2 } },
+  { model: "IXY DIGITAL 50", count: 109, overall: 11999, junk: { price: 5750, count: 14 }, good: { price: 13440, count: 56 }, fair: { price: 10800, count: 32 }, poor: { price: 7650, count: 16 }, veryPoor: { price: 5990, count: 5 } },
 ];
+
+const modelCollator = new Intl.Collator("ja-JP", { numeric: true, sensitivity: "base" });
+const sortedMarketData = [...marketData].sort((a, b) => modelCollator.compare(a.model, b.model));
 
 const colorRules = {
   silver: { label: "シルバー", factor: 1, note: "基準色として補正なし" },
@@ -94,7 +99,7 @@ function roundToHundred(value) {
 }
 
 function getModel() {
-  return marketData.find((item) => item.model === modelSelect.value) || marketData[0];
+  return marketData.find((item) => item.model === modelSelect.value) || sortedMarketData[0];
 }
 
 function getBasePrice(model, basis) {
@@ -194,7 +199,7 @@ function renderBars(model) {
 
 function renderTable() {
   const query = normalize(tableSearch.value);
-  marketTable.innerHTML = marketData
+  marketTable.innerHTML = sortedMarketData
     .filter((item) => normalize(item.model).includes(query))
     .map((item) => {
       const selected = item.model === modelSelect.value ? "selected" : "";
@@ -265,7 +270,7 @@ function renderCalculator() {
 }
 
 function init() {
-  modelSelect.innerHTML = marketData
+  modelSelect.innerHTML = sortedMarketData
     .map((item) => `<option value="${item.model}">${item.model}</option>`)
     .join("");
 
