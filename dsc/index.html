@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sony DSC 仕入れ判定ツール</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Mercari sold data / 2026-02-27 to 2026-05-27</p>
+            <h1>Sony DSC 仕入れ判定ツール</h1>
+          </div>
+          <div class="status-chip" id="datasetStatus">24型番 / カラー補正対応</div>
+        </header>
+
+        <section class="dashboard">
+          <form class="panel input-panel" id="calculatorForm">
+            <div class="panel-head">
+              <h2>入力</h2>
+              <button class="icon-button" type="button" id="resetButton" aria-label="入力をリセット" title="入力をリセット">
+                <span aria-hidden="true">↺</span>
+              </button>
+            </div>
+
+            <label class="field">
+              <span>型番</span>
+              <select id="modelSelect"></select>
+            </label>
+
+            <div class="grid-2">
+              <label class="field">
+                <span>カラー</span>
+                <select id="colorSelect">
+                  <option value="silver">シルバー</option>
+                  <option value="black">ブラック</option>
+                  <option value="pink">ピンク</option>
+                  <option value="other">その他</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>相場モード</span>
+                <select id="basisSelect">
+                  <option value="overall">全体中央値</option>
+                  <option value="junk">ジャンク</option>
+                  <option value="good">目立った傷や汚れなし</option>
+                  <option value="fair">やや傷や汚れあり</option>
+                  <option value="poor">傷や汚れあり</option>
+                  <option value="veryPoor">全体的に状態が悪い</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>販売見込み</span>
+              <input id="salePrice" type="number" min="0" step="100" inputmode="numeric" />
+            </label>
+
+            <label class="field">
+              <span>仕入れ金額</span>
+              <input id="buyPrice" type="number" min="0" step="100" inputmode="numeric" placeholder="例: 25000" />
+            </label>
+
+            <div class="grid-2">
+              <label class="field">
+                <span>手数料</span>
+                <div class="suffix-input">
+                  <input id="feeRate" type="number" min="0" max="40" step="0.1" value="10" />
+                  <span>%</span>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>送料</span>
+                <select id="shippingPreset">
+                  <option value="0">0円</option>
+                  <option value="450">450円</option>
+                  <option value="750" selected>750円</option>
+                  <option value="850">850円</option>
+                  <option value="1050">1,050円</option>
+                  <option value="custom">手入力</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field compact" id="customShippingWrap" hidden>
+              <span>送料を手入力</span>
+              <input id="shippingCost" type="number" min="0" step="10" inputmode="numeric" value="750" />
+            </label>
+
+            <fieldset class="mode-group">
+              <legend>判定モード</legend>
+              <label>
+                <input type="radio" name="judgeMode" value="standard" checked />
+                <span>標準</span>
+              </label>
+              <label>
+                <input type="radio" name="judgeMode" value="conservative" />
+                <span>堅め</span>
+              </label>
+              <label>
+                <input type="radio" name="judgeMode" value="aggressive" />
+                <span>攻め</span>
+              </label>
+            </fieldset>
+          </form>
+
+          <section class="panel result-panel" aria-live="polite">
+            <div class="decision" id="decisionBox">
+              <div class="decision-mark" id="decisionMark">△</div>
+              <div>
+                <p class="decision-label" id="decisionLabel">条件を入力してください</p>
+                <p class="decision-note" id="decisionNote">型番、カラー、仕入れ金額から判定します。</p>
+              </div>
+            </div>
+
+            <div class="metrics">
+              <article>
+                <span>利益額</span>
+                <strong id="profitAmount">-</strong>
+              </article>
+              <article>
+                <span>利益率（対仕入れ）</span>
+                <strong id="roiRate">-</strong>
+              </article>
+              <article>
+                <span>売上利益率</span>
+                <strong id="salesMargin">-</strong>
+              </article>
+              <article>
+                <span>損益分岐仕入れ</span>
+                <strong id="breakEven">-</strong>
+              </article>
+            </div>
+
+            <div class="thresholds">
+              <div>
+                <span>○にする上限</span>
+                <strong id="circleLimit">-</strong>
+              </div>
+              <div>
+                <span>△にする上限</span>
+                <strong id="triangleLimit">-</strong>
+              </div>
+              <p id="thresholdText"></p>
+            </div>
+          </section>
+        </section>
+
+        <section class="market-section">
+          <section class="panel market-panel">
+            <div class="panel-head">
+              <h2>選択型番の相場</h2>
+              <span id="modelCount"></span>
+            </div>
+            <div class="price-bars" id="priceBars"></div>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="panel-head">
+              <h2>相場一覧</h2>
+              <label class="table-filter">
+                <span>検索</span>
+                <input id="tableSearch" type="search" placeholder="DSC-WX500" />
+              </label>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>型番</th>
+                    <th>全体</th>
+                    <th>ジャンク</th>
+                    <th>目立った傷なし</th>
+                    <th>やや傷あり</th>
+                    <th>傷あり</th>
+                    <th>全体的に悪い</th>
+                  </tr>
+                </thead>
+                <tbody id="marketTable"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

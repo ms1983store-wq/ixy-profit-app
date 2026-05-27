@@ -29,6 +29,8 @@ jobs:
         run: |
           mkdir _site
           cp index.html styles.css app.js _site/
+          mkdir -p _site/dsc
+          cp dsc/index.html dsc/styles.css dsc/app.js _site/dsc/
           touch _site/.nojekyll
 
       - name: Configure Pages
@@ -42,4 +44,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
