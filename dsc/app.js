@@ -23,6 +23,7 @@ const marketData = [
   { model: "DSC-W530", count: 82, overall: 11050, junk: { price: 6900, count: 5 }, good: { price: 13000, count: 48 }, fair: { price: 10900, count: 24 }, poor: { price: 8990, count: 8 }, veryPoor: { price: 5450, count: 2 } },
   { model: "DSC-WX50", count: 78, overall: 10990, junk: { price: 6000, count: 11 }, good: { price: 12800, count: 41 }, fair: { price: 10840, count: 22 }, poor: { price: 9250, count: 10 }, veryPoor: { price: 5280, count: 5 } },
   { model: "DSC-HX60V", count: 73, overall: 23400, junk: { price: 13500, count: 7 }, good: { price: 25000, count: 39 }, fair: { price: 24050, count: 20 }, poor: { price: 16950, count: 8 }, veryPoor: { price: 14900, count: 6 } },
+  { model: "DSC-W320", count: 52, overall: 11700, junk: { price: 8023, count: 4 }, good: { price: 12150, count: 30 }, fair: { price: 10630, count: 18 }, poor: { price: 10140, count: 4 }, veryPoor: { price: 6800, count: 0 } },
 ];
 
 const modelCollator = new Intl.Collator("ja-JP", { numeric: true, sensitivity: "base" });
