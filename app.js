@@ -23,6 +23,12 @@ const marketData = [
   { model: "IXY 210", count: 73, overall: 19999, junk: { price: 10300, count: 6 }, good: { price: 22000, count: 47 }, fair: { price: 16250, count: 16 }, poor: { price: 19500, count: 5 }, veryPoor: { price: 11000, count: 5 } },
   { model: "IXY 110F", count: 35, overall: 20000, junk: { price: 15000, count: 3 }, good: { price: 21000, count: 25 }, fair: { price: 18650, count: 8 }, poor: { price: 17500, count: 0 }, veryPoor: { price: 17500, count: 2 } },
   { model: "IXY DIGITAL 50", count: 109, overall: 11999, junk: { price: 5750, count: 14 }, good: { price: 13440, count: 56 }, fair: { price: 10800, count: 32 }, poor: { price: 7650, count: 16 }, veryPoor: { price: 5990, count: 5 } },
+  { model: "IXY 150", count: 82, overall: 15678, junk: { price: 9800, count: 11 }, good: { price: 16250, count: 50 }, fair: { price: 15400, count: 17 }, poor: { price: 14850, count: 10 }, veryPoor: { price: 3800, count: 5 } },
+  { model: "IXY 160", count: 65, overall: 15600, junk: { price: 8200, count: 8 }, good: { price: 16800, count: 40 }, fair: { price: 14799, count: 15 }, poor: { price: 10400, count: 7 }, veryPoor: { price: 9500, count: 3 } },
+  { model: "IXY 220F", count: 45, overall: 23800, junk: { price: 16500, count: 6 }, good: { price: 25000, count: 26 }, fair: { price: 23564, count: 14 }, poor: { price: 25103, count: 2 }, veryPoor: { price: 15000, count: 3 } },
+  { model: "IXY 420F", count: 43, overall: 25000, junk: { price: 20000, count: 1 }, good: { price: 25000, count: 25 }, fair: { price: 24000, count: 11 }, poor: { price: 22000, count: 7 }, veryPoor: { price: 22000, count: 0 } },
+  { model: "IXY 430F", count: 97, overall: 23000, junk: { price: 15250, count: 10 }, good: { price: 24700, count: 62 }, fair: { price: 22000, count: 25 }, poor: { price: 20500, count: 5 }, veryPoor: { price: 13800, count: 5 } },
+  { model: "IXY DIGITAL 220 IS", count: 34, overall: 16140, junk: { price: 7250, count: 6 }, good: { price: 17980, count: 11 }, fair: { price: 16640, count: 12 }, poor: { price: 15980, count: 7 }, veryPoor: { price: 10000, count: 4 } },
 ];
 
 const modelCollator = new Intl.Collator("ja-JP", { numeric: true, sensitivity: "base" });
