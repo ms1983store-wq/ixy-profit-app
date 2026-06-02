@@ -28,6 +28,8 @@ const marketData = [
   { model: "IXY 220F", count: 45, overall: 23800, junk: { price: 16500, count: 6 }, good: { price: 25000, count: 26 }, fair: { price: 23564, count: 14 }, poor: { price: 25103, count: 2 }, veryPoor: { price: 15000, count: 3 } },
   { model: "IXY 420F", count: 43, overall: 25000, junk: { price: 20000, count: 1 }, good: { price: 25000, count: 25 }, fair: { price: 24000, count: 11 }, poor: { price: 22000, count: 7 }, veryPoor: { price: 22000, count: 0 } },
   { model: "IXY 430F", count: 97, overall: 23000, junk: { price: 15250, count: 10 }, good: { price: 24700, count: 62 }, fair: { price: 22000, count: 25 }, poor: { price: 20500, count: 5 }, veryPoor: { price: 13800, count: 5 } },
+  { model: "IXY 620F", count: 43, overall: 22000, junk: { price: 15000, count: 6 }, good: { price: 22222, count: 27 }, fair: { price: 22785, count: 11 }, poor: { price: 16060, count: 4 }, veryPoor: { price: 5000, count: 1 } },
+  { model: "IXY DIGITAL 1000", count: 31, overall: 14000, junk: { price: 13400, count: 4 }, good: { price: 15450, count: 14 }, fair: { price: 14500, count: 12 }, poor: { price: 9000, count: 5 }, veryPoor: { price: 9000, count: 0 } },
   { model: "IXY DIGITAL 220 IS", count: 34, overall: 16140, junk: { price: 7250, count: 6 }, good: { price: 17980, count: 11 }, fair: { price: 16640, count: 12 }, poor: { price: 15980, count: 7 }, veryPoor: { price: 10000, count: 4 } },
 ];
 
