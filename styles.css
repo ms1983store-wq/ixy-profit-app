@@ -301,7 +301,14 @@ select:focus {
   gap: 10px;
 }
 
+.sales-window {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .metrics article,
+.sales-window article,
 .thresholds div {
   min-height: 88px;
   display: grid;
@@ -314,12 +321,14 @@ select:focus {
 }
 
 .metrics span,
+.sales-window span,
 .thresholds span {
   color: var(--muted);
   font-size: 12px;
 }
 
 .metrics strong,
+.sales-window strong,
 .thresholds strong {
   font-size: 22px;
   letter-spacing: 0;
@@ -417,7 +426,7 @@ select:focus {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 780px;
+  min-width: 920px;
 }
 
 th,

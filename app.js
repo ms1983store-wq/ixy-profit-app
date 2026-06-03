@@ -19,6 +19,7 @@ const marketData = [
   { model: "IXY 180", count: 130, overall: 17700, junk: { price: 12300, count: 16 }, good: { price: 19480, count: 65 }, fair: { price: 16000, count: 48 }, poor: { price: 13400, count: 8 }, veryPoor: { price: 12000, count: 9 } },
   { model: "IXY 210F", count: 116, overall: 22000, junk: { price: 17049, count: 13 }, good: { price: 23500, count: 72 }, fair: { price: 21000, count: 35 }, poor: { price: 19250, count: 6 }, veryPoor: { price: 16800, count: 3 } },
   { model: "IXY 630", count: 105, overall: 28800, junk: { price: 14000, count: 6 }, good: { price: 29800, count: 62 }, fair: { price: 27390, count: 34 }, poor: { price: 19500, count: 5 }, veryPoor: { price: 15428, count: 4 } },
+  { model: "IXY 640", count: 67, overall: 25000, junk: { price: 15450, count: 6 }, good: { price: 27750, count: 34 }, fair: { price: 25000, count: 22 }, poor: { price: 20750, count: 6 }, veryPoor: { price: 14900, count: 5 } },
   { model: "IXY 30S", count: 111, overall: 40000, junk: { price: 18750, count: 6 }, good: { price: 43000, count: 57 }, fair: { price: 38773, count: 35 }, poor: { price: 34000, count: 13 }, veryPoor: { price: 19750, count: 6 } },
   { model: "IXY 210", count: 73, overall: 19999, junk: { price: 10300, count: 6 }, good: { price: 22000, count: 47 }, fair: { price: 16250, count: 16 }, poor: { price: 19500, count: 5 }, veryPoor: { price: 11000, count: 5 } },
   { model: "IXY 110F", count: 35, overall: 20000, junk: { price: 15000, count: 3 }, good: { price: 21000, count: 25 }, fair: { price: 18650, count: 8 }, poor: { price: 17500, count: 0 }, veryPoor: { price: 17500, count: 2 } },
@@ -35,6 +36,42 @@ const marketData = [
 
 const modelCollator = new Intl.Collator("ja-JP", { numeric: true, sensitivity: "base" });
 const sortedMarketData = [...marketData].sort((a, b) => modelCollator.compare(a.model, b.model));
+
+const salesCounts = {
+  "IXY 650": [127, 257, 386],
+  "IXY 200": [85, 178, 262],
+  "IXY DIGITAL 10": [80, 149, 231],
+  "IXY DIGITAL 900 IS": [77, 148, 209],
+  "IXY 600F": [74, 137, 185],
+  "IXY DIGITAL 930 IS": [51, 127, 184],
+  "IXY DIGITAL 910 IS": [67, 132, 181],
+  "IXY DIGITAL 920 IS": [58, 124, 186],
+  "IXY DIGITAL 70": [59, 114, 186],
+  "IXY DIGITAL 510 IS": [54, 116, 171],
+  "IXY 10S": [54, 110, 164],
+  "IXY DIGITAL 800 IS": [64, 117, 159],
+  "IXY DIGITAL 25 IS": [60, 114, 154],
+  "IXY DIGITAL 60": [49, 93, 143],
+  "IXY 200F": [44, 88, 130],
+  "IXY DIGITAL 110 IS": [54, 117, 146],
+  "IXY DIGITAL 20 IS": [42, 85, 132],
+  "IXY 180": [47, 104, 150],
+  "IXY 210F": [51, 96, 120],
+  "IXY 630": [38, 74, 104],
+  "IXY 640": [32, 48, 67],
+  "IXY 30S": [50, 99, 132],
+  "IXY 210": [22, 50, 87],
+  "IXY 110F": [11, 26, 36],
+  "IXY DIGITAL 50": [56, 101, 134],
+  "IXY 150": [32, 78, 104],
+  "IXY 160": [16, 43, 59],
+  "IXY 220F": [13, 25, 39],
+  "IXY 420F": [17, 34, 50],
+  "IXY 430F": [30, 61, 95],
+  "IXY 620F": [12, 25, 40],
+  "IXY DIGITAL 1000": [9, 23, 33],
+  "IXY DIGITAL 220 IS": [21, 36, 48],
+};
 
 const colorRules = {
   silver: { label: "シルバー", factor: 1, note: "基準色として補正なし" },
@@ -100,6 +137,9 @@ const triangleLimit = document.querySelector("#triangleLimit");
 const thresholdText = document.querySelector("#thresholdText");
 const priceBars = document.querySelector("#priceBars");
 const modelCount = document.querySelector("#modelCount");
+const salesOneMonth = document.querySelector("#salesOneMonth");
+const salesTwoMonths = document.querySelector("#salesTwoMonths");
+const salesThreeMonths = document.querySelector("#salesThreeMonths");
 const marketTable = document.querySelector("#marketTable");
 
 function roundToHundred(value) {
@@ -120,6 +160,15 @@ function getCount(model, basis) {
   if (!model) return 0;
   if (basis === "overall") return model.count;
   return model[basis]?.count ?? 0;
+}
+
+function getSalesCounts(model) {
+  const counts = salesCounts[model.model] || [0, 0, model.count];
+  return { one: counts[0], two: counts[1], three: counts[2] };
+}
+
+function formatCount(count) {
+  return `${count.toLocaleString("ja-JP")}件`;
 }
 
 function getColorAdjustedPrice(model, basis, colorKey) {
@@ -188,7 +237,7 @@ function renderBars(model) {
     color: colors.adjusted,
   });
 
-  modelCount.textContent = `${model.count}件 / ${color.note}`;
+  modelCount.textContent = `3ヶ月 ${formatCount(getSalesCounts(model).three)} / ${color.note}`;
   priceBars.innerHTML = rows
     .map((row) => {
       const width = maxPrice ? Math.max(5, Math.round((row.price / maxPrice) * 100)) : 0;
@@ -205,15 +254,26 @@ function renderBars(model) {
     .join("");
 }
 
+function renderSalesCounts(model) {
+  const sales = getSalesCounts(model);
+  salesOneMonth.textContent = formatCount(sales.one);
+  salesTwoMonths.textContent = formatCount(sales.two);
+  salesThreeMonths.textContent = formatCount(sales.three);
+}
+
 function renderTable() {
   const query = normalize(tableSearch.value);
   marketTable.innerHTML = sortedMarketData
     .filter((item) => normalize(item.model).includes(query))
     .map((item) => {
       const selected = item.model === modelSelect.value ? "selected" : "";
+      const sales = getSalesCounts(item);
       return `
         <tr class="${selected}" data-model="${item.model}">
           <td>${item.model}</td>
+          <td>${formatCount(sales.one)}</td>
+          <td>${formatCount(sales.two)}</td>
+          <td>${formatCount(sales.three)}</td>
           <td>${yen.format(item.overall)}</td>
           <td>${yen.format(item.junk.price)}</td>
           <td>${yen.format(item.good.price)}</td>
@@ -273,6 +333,7 @@ function renderCalculator() {
   triangleLimit.textContent = yen.format(triangleMax);
   thresholdText.textContent = `${rules.label}モード: ○は利益${yen.format(rules.circle.minProfit)}以上かつ対仕入れ${rules.circle.roi}%以上、△は利益${yen.format(rules.triangle.minProfit)}以上かつ対仕入れ${rules.triangle.roi}%以上。手数料 ${feeRate}% / 送料 ${yen.format(ship)} / 色補正 ${Math.round(color.factor * 100)}% で計算。`;
 
+  renderSalesCounts(model);
   renderBars(model);
   renderTable();
 }
